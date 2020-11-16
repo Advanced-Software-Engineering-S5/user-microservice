@@ -21,5 +21,6 @@ def create_app(dbfile="userdb.db"):
 
 
 if __name__ == "__main__":
-    app = create_app()
+    import sys
+    app = create_app(sys.argv[1])
     app.run()
