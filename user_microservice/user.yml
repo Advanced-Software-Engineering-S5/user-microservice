@@ -2,14 +2,272 @@ openapi: "3.0.0"
 info:
   title: GoOutSafe user microservice
   version: "0.0.1"
+servers:
+  - url: http://0.0.0.0:5000/
+    description: "Users and auth server"
 paths:
-  /get:
+  /user:
     get:
       operationId: user_microservice.views.user.get
+      description: |
+        Get a user given **only one** of the following parameters.
+
+        For example, to get the user with *id* 1 you must issue `GET /user?id=1`.
+      parameters:
+
+        - name: id
+          in: query
+          required: false
+          description: "Unique id of the requested user"
+          schema:
+            $ref: '#/components/schemas/user/properties/id'
+          example: 1337
+        - name: email
+          in: query
+          required: false
+          description: "e-mail of the requested user"
+          schema:
+            $ref: '#/components/schemas/user/properties/email'
+          example: user@microservice.com
+        - name: fiscal_code
+          in: query
+          required: false
+          description: "fiscal code of the requested user"
+          schema:
+            $ref: '#/components/schemas/user/properties/fiscal_code'
+          example: ZRBFRL64R14L416H
+        - name: phone
+          in: query
+          required: false
+          description: "phone number of the requested user"
+          schema:
+            $ref: '#/components/schemas/user/properties/phone'
+          example: 3493413333
       responses:
         "200":
-          description: "returns a count"
+          description: Returns a User instance.
           content:
-            text/plain:
+            application/json:
               schema:
-                type: integer
+                $ref: '#/components/schemas/user'
+        "500":
+          description: Failed to query the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+        "404":
+          description: The user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+    post:
+      operationId: user_microservice.views.user.create
+      description: Creates an user by reading the user_create schema.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user_create'
+      responses:
+        "201":
+          description: User succesfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user/properties/id'
+        "500":
+          description: Failed to create the user using the specified arguments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+  /user/{user_id}/{field}:
+    get:
+      description: Get the user field specified in {field}.
+      operationId: user_microservice.views.user.get_field
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: field
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Field exists and has been succesfully read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnyValue'
+        "500":
+          description: Field does not exist or db failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+    post:
+      description: Set the user field specified in {field}.
+      operationId: user_microservice.views.user.update_field
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: field
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnyValue'
+      responses:
+        "200":
+          description: Field succesfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnyValue'
+        "500":
+          description: Field does not exist or db failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+  /users:
+    get:
+      description: Returns all the users
+      operationId: user_microservice.views.user.get_users
+      responses:
+        "200":
+          description: All the users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/user'
+  /users/filter:
+    put:
+      description: |
+        Return all the users with respect to the issued filter stmt.
+      operationId: user_microservice.views.user.get_users_filtered
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              example: User.id == 3 and User.is_admin
+      responses:
+        "200":
+          description: List of users satisfying the supplied filters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/user'
+        "500":
+          description: Failed to parse the statement list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
+components:
+  schemas:
+    AnyValue: {}
+    error_response:
+      description: Schema for errors
+      type: object
+      properties:
+        error:
+          type: string
+    user_create:
+      description: |
+        Schema to issue a user creation.
+        
+        Mimics what is found inside `class UserForm` from the monolith.
+      type: object
+      properties:
+        email:
+          $ref: '#/components/schemas/user/properties/email'
+        firstname:
+          $ref: '#/components/schemas/user/properties/firstname'
+        lastname:
+          $ref: '#/components/schemas/user/properties/lastname'
+        password:
+          $ref: '#/components/schemas/user/properties/password'
+        fiscal_code:
+          $ref: '#/components/schemas/user/properties/fiscal_code'
+        phone:
+          $ref: '#/components/schemas/user/properties/phone'
+        dateofbirth:
+          $ref: '#/components/schemas/user/properties/dateofbirth'
+        restaurant_id:
+          $ref: '#/components/schemas/user/properties/restaurant_id'
+    user:
+      description: User datatype
+      type: object
+      properties:
+        id:
+          description: User ID
+          type: integer
+        email:
+          description: User e-mail
+          type: string
+          format: email
+          pattern: ^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$
+          maxLength: 128
+        firstname:
+          description: User first name
+          type: string          
+          maxLength: 128
+        lastname:
+          description: User last name
+          type: string          
+          maxLength: 128
+        fiscal_code:
+          description: User fiscal code
+          type: string
+          maxLength: 50
+        phone:
+          description: User phone number
+          type: string
+          maxLength: 20
+        password:
+          description: User password
+          type: string
+          format: password
+        dateofbirth:
+          description: User birthday
+          type: string
+          format: date-time
+        confirmed_positive_date:
+          description: User COVID positivity date
+          type: string
+          format: date
+        is_active:
+          description: \?
+          type: boolean
+        is_admin:
+          description: Is user an health authority?
+          type: boolean
+        is_positive:
+          description: Is user covid positive
+          type: boolean
+        reported_positive_date:
+          description: User reported COVID positivity date
+          type: string
+          format: date-time
+        restaurant_id:
+          description: User restaurant id (if operator)
+          type: integer

@@ -7,25 +7,23 @@ class User(db.Model):
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email = db.Column(db.Unicode(128), nullable=False)
+    email = db.Column(db.Unicode(128), unique=True, nullable=False)
     firstname = db.Column(db.Unicode(128))
     lastname = db.Column(db.Unicode(128))
     fiscal_code = db.Column(db.Text(50), unique=True)
     phone = db.Column(db.Text(20), nullable=True, unique=True)
     password = db.Column(db.Unicode(128))
     dateofbirth = db.Column(db.DateTime)
-    fiscal_code = db.Column(db.Text(50), unique=True)
-    phone = db.Column(db.Text(50), nullable=True, unique=True)
     confirmed_positive_date = db.Column(db.Date, nullable=True)
     is_active = db.Column(db.Boolean, default=True)
     is_admin = db.Column(db.Boolean, default=False)
     is_positive = db.Column(db.Boolean, default=False)
     reported_positive_date = db.Column(db.DateTime, nullable=True)
+    restaurant_id = db.Column(db.Integer, nullable=True)
     is_anonymous = False
 
     # Now that everything is split into microservices this isn't needed anymore
     # #One to one relationship
-    # restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=True)
     # restaurant = db.relationship("Restaurant", back_populates="operator", uselist=False)
 
     # #One to many relationship
