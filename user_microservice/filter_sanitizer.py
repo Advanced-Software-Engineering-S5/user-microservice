@@ -21,9 +21,12 @@ def sanitize_filter(stmt: str) -> str:
             except (TypeError, ValueError):
                 return node
 
-    tree = ast.parse(stmt, mode='eval')
-    for node in ast.walk(tree):
-        if not type(node) in whitelist:
-            return ""
+    try:
+        tree = ast.parse(stmt, mode='eval')
+        for node in ast.walk(tree):
+            if not type(node) in whitelist:
+                return ""
 
-    return astor.to_source(RewriteDatetime().visit(tree))
+        return astor.to_source(RewriteDatetime().visit(tree))
+    except SyntaxError:
+        return ""

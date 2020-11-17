@@ -14,7 +14,7 @@ class User(db.Model):
     phone = db.Column(db.Text(20), nullable=True, unique=True)
     password = db.Column(db.Unicode(128))
     dateofbirth = db.Column(db.DateTime)
-    confirmed_positive_date = db.Column(db.Date, nullable=True)
+    confirmed_positive_date = db.Column(db.DateTime, nullable=True)
     is_active = db.Column(db.Boolean, default=True)
     is_admin = db.Column(db.Boolean, default=False)
     is_positive = db.Column(db.Boolean, default=False)

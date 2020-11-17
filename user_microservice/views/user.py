@@ -10,17 +10,14 @@ def get():
     field = None
     for kv_pair in request.args.items():
         #Grab the first one we find.
-        field = kv_pair
-        break
-    if field:
         try:
             # usr = User.query.filter(column(kv_pair[0]) == kv_pair[1]).first()
             usr = User.query.filter(getattr(User, kv_pair[0]) == kv_pair[1]).first()
         except (DatabaseError, AttributeError) as exc:
             return str(exc), 500
         return (usr.to_dict(), 200) if usr else ({}, 404)
-    else:
-        return {}, 404
+    #If we didn't fint anything
+    return {}, 404
 
 
 def create_user(*,
@@ -83,6 +80,7 @@ def update_field(user_id, field):
         if hasattr(usr, field):
             setattr(usr, field, request.get_json())
             db.session.commit()
+            return {}, 200
         else:
             return f"No field '{field}'", 500
     except DBAPIError as exc:

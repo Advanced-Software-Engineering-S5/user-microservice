@@ -231,43 +231,55 @@ components:
           description: User first name
           type: string          
           maxLength: 128
+          nullable: true
         lastname:
           description: User last name
           type: string          
           maxLength: 128
+          nullable: true
         fiscal_code:
           description: User fiscal code
           type: string
           maxLength: 50
+          nullable: true
         phone:
           description: User phone number
           type: string
           maxLength: 20
+          nullable: true
         password:
           description: User password
           type: string
           format: password
+          nullable: true
         dateofbirth:
           description: User birthday
           type: string
           format: date-time
+          nullable: true
         confirmed_positive_date:
           description: User COVID positivity date
           type: string
-          format: date
+          format: date-time
+          nullable: true
         is_active:
           description: \?
           type: boolean
+          nullable: true
         is_admin:
           description: Is user an health authority?
           type: boolean
+          nullable: true
         is_positive:
           description: Is user covid positive
           type: boolean
+          nullable: true
         reported_positive_date:
           description: User reported COVID positivity date
           type: string
           format: date-time
+          nullable: true
         restaurant_id:
           description: User restaurant id (if operator)
           type: integer
+          nullable: true
