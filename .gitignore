@@ -1,6 +1,7 @@
 #No db files
 *.db
 deploy_key.pub
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

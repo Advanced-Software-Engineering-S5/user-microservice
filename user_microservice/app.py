@@ -1,6 +1,8 @@
 import connexion
+from flask_jwt_extended import JWTManager, create_access_token
 from user_microservice.database import db
 
+jwt = JWTManager()
 
 def create_app(dbfile="userdb.db"):
     app = connexion.FlaskApp(__name__)
@@ -11,6 +13,10 @@ def create_app(dbfile="userdb.db"):
 
     flask_app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{dbfile}"
     flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    flask_app.config["JWT_SECRET_KEY"] = "secret_key_bella_e_nascosta"
+
+    # Bind JWT manager
+    jwt.init_app(flask_app)
 
     # Binds the database to the Flask app
     db.init_app(flask_app)
