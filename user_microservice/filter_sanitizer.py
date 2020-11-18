@@ -4,8 +4,10 @@ from datetime import datetime
 
 whitelist = [
     ast.Expression, ast.Compare, ast.Num, ast.Lt, ast.Gt, ast.Eq, ast.GtE, ast.LtE, ast.NotEq, ast.Tuple, ast.Load,
-    ast.Name, ast.Attribute, ast.Constant, ast.Str
+    ast.Name, ast.Attribute, ast.Constant, ast.Str, ast.Call
 ]
+
+whitelist_funcname = ['and_', 'or_']
 
 
 def sanitize_filter(stmt: str) -> str:
@@ -26,7 +28,8 @@ def sanitize_filter(stmt: str) -> str:
         for node in ast.walk(tree):
             if not type(node) in whitelist:
                 return ""
-
+            if type(node) == ast.Call and node.func.id not in whitelist_funcname:
+                return ""
         return astor.to_source(RewriteDatetime().visit(tree))
     except SyntaxError:
         return ""

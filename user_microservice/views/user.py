@@ -1,9 +1,28 @@
 from flask import session, request, jsonify
 from user_microservice.database import db, User
 from user_microservice.filter_sanitizer import sanitize_filter
-from sqlalchemy import column, and_
+from sqlalchemy import column, and_, or_
 from sqlalchemy.exc import DatabaseError, DBAPIError
 from werkzeug.security import generate_password_hash
+from datetime import datetime
+
+# Back and forth from isoformat to datetime
+def try_fromisoformat(iso):
+    if type(iso) == str:
+        try:
+            return datetime.fromisoformat(iso)
+        except ValueError:
+            pass
+    return None
+
+
+def try_isoformat(iso):
+    if type(iso) == datetime:
+        try:
+            return iso.isoformat()
+        except ValueError:
+            pass
+    return None
 
 
 def get():
@@ -15,7 +34,16 @@ def get():
             usr = User.query.filter(getattr(User, kv_pair[0]) == kv_pair[1]).first()
         except (DatabaseError, AttributeError) as exc:
             return str(exc), 500
-        return (usr.to_dict(), 200) if usr else ({}, 404)
+        
+        if usr:
+            usr_dict = usr.to_dict()
+            usr_dict['dateofbirth'] = try_isoformat(usr_dict['dateofbirth'])
+            usr_dict['reported_positive_date'] = try_isoformat(usr_dict['reported_positive_date'])
+            usr_dict['confirmed_positive_date'] = try_isoformat(usr_dict['confirmed_positive_date'])
+
+            return usr_dict, 200 
+        else:
+            return {}, 404
     #If we didn't fint anything
     return {}, 404
 
@@ -34,10 +62,10 @@ def create_user(*,
             User(email=email,
                  firstname=firstname,
                  lastname=lastname,
-                 password=generate_password_hash(password) if password else None,
+                 password=password,
                  fiscal_code=fiscal_code,
                  phone=phone,
-                 dateofbirth=dateofbirth,
+                 dateofbirth=try_fromisoformat(dateofbirth),
                  restaurant_id=restaurant_id))
         db.session.commit()
     except DBAPIError as exc:
@@ -57,7 +85,15 @@ def create():
 
 def get_users():
     try:
-        return list(x.to_dict() for x in User.query.all())
+        lst = []
+        for user in User.query.all():
+            user_dict = user.to_dict()
+            user_dict['dateofbirth'] = try_isoformat(user_dict['dateofbirth'])
+            user_dict['reported_positive_date'] = try_isoformat(user_dict['reported_positive_date'])
+            user_dict['confirmed_positive_date'] = try_isoformat(user_dict['confirmed_positive_date'])
+
+            lst.append(user_dict)
+        return lst
     except DBAPIError as exc:
         return str(exc), 500
 
@@ -67,7 +103,15 @@ def get_users_filtered():
     try:
         stmt = sanitize_filter(eval_str)
         if stmt:
-            return list(x.to_dict() for x in User.query.filter(eval(stmt)).all())
+            lst = []
+            for user in User.query.filter(eval(stmt)).all():
+                user_dict = user.to_dict()
+                user_dict['dateofbirth'] = try_isoformat(user_dict['dateofbirth'])
+                user_dict['reported_positive_date'] = try_isoformat(user_dict['reported_positive_date'])
+                user_dict['confirmed_positive_date'] = try_isoformat(user_dict['confirmed_positive_date'])
+
+                lst.append(user_dict)
+            return lst
         else:
             return "Unsafe filter", 500
     except DBAPIError as exc:
@@ -78,7 +122,10 @@ def update_field(user_id, field):
     try:
         usr = User.query.filter(User.id == user_id).first()
         if hasattr(usr, field):
-            setattr(usr, field, request.get_json())
+            if field in ['confirmed_positive_date', 'reported_positive_date', 'dateofbirth']:
+                setattr(usr, field, datetime.fromisoformat(request.get_json()))
+            else:
+                setattr(usr, field, request.get_json())
             db.session.commit()
             return {}, 200
         else:
@@ -91,7 +138,10 @@ def get_field(user_id, field):
     try:
         usr = User.query.filter(User.id == user_id).first()
         if hasattr(usr, field):
-            return getattr(usr, field)
+            if field in ['confirmed_positive_date', 'reported_positive_date', 'dateofbirth']:
+                return getattr(usr, field).isoformat()
+            else: 
+                return getattr(usr, field)
         else:
             return f"No field '{field}'", 500
     except DBAPIError as exc:

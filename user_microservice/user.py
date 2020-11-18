@@ -6,6 +6,15 @@ from typing import Optional
 BASE_URL = "http://0.0.0.0:5000"
 
 
+def try_fromisoformat(iso):
+    if type(iso) == str:
+        try:
+            return datetime.fromisoformat(iso)
+        except ValueError:
+            pass
+    return None
+
+
 @dataclass(eq=False, order=False)
 class User:
     """
@@ -50,9 +59,16 @@ class User:
                                'phone': phone
                            })
 
+
         if req.status_code == 200:
-            usr = User(**(req.json()))
-            usr.invariant = req.json()
+            json_dict = req.json()
+
+            # Turn iso format into datetime object
+            json_dict['dateofbirth'] = try_fromisoformat(json_dict['dateofbirth'])
+            json_dict['reported_positive_date'] = try_fromisoformat(json_dict['reported_positive_date'])
+            json_dict['confirmed_positive_date'] = try_fromisoformat(json_dict['confirmed_positive_date'])
+            usr = User(**json_dict)
+            usr.invariant = json_dict
             return usr
         else:
             return None
@@ -67,10 +83,12 @@ class User:
             usr.submit()
         """
         for field in fields(self):
-            if field.init and getattr(self, field.name) != self.invariant[field.name]:
-                req = requests.post(f"{BASE_URL}/user/{self.id}/{field.name}", json=getattr(self, field.name))
+            attr = getattr(self, field.name)
+            if field.init and attr != self.invariant[field.name]:
+                req = requests.post(f"{BASE_URL}/user/{self.id}/{field.name}",
+                                    json=attr.isoformat() if type(attr) == datetime else attr)
                 if req.status_code == 200:
-                    self.invariant[field.name] = getattr(self, field.name)
+                    self.invariant[field.name] = attr
                 else:
                     setattr(self, field.name, self.invariant[field.name])
 
@@ -95,7 +113,7 @@ class User:
             'password': password,
             'fiscal_code': fiscal_code,
             'phone': phone,
-            'dateofbirth': dateofbirth,
+            'dateofbirth': dateofbirth.isoformat() if type(dateofbirth) == datetime else dateofbirth,
             'restaurant_id': restaurant_id
         }
 
@@ -114,6 +132,12 @@ class User:
         if req.status_code == 200:
             lst = list()
             for user_json in req.json():
+
+                # Turn iso format into datetime object
+                user_json['dateofbirth'] = try_fromisoformat(user_json['dateofbirth'])
+                user_json['reported_positive_date'] = try_fromisoformat(user_json['reported_positive_date'])
+                user_json['confirmed_positive_date'] = try_fromisoformat(user_json['confirmed_positive_date'])
+
                 usr = User(**user_json)
                 usr.invariant = user_json
                 lst.append(usr)
@@ -128,12 +152,19 @@ class User:
         Timestamps have to be sent as ISO format strings (isoformat() method).
 
         Example:
-            User.filter("User.id > 3 and User.id < 6")
+            User.filter("and_(User.id > 3, User.id < 6)")
+            User.filter("and_(User.dateofbirth > '2020-11-18T20:54:25.509863', User.dateofbirth < '2020-11-18T20:54:25.509881')")
         """
         req = requests.put(f"{BASE_URL}/users/filter", json=str)
         if req.status_code == 200:
             lst = list()
             for user_json in req.json():
+
+                # Turn iso format into datetime object
+                user_json['dateofbirth'] = try_fromisoformat(user_json['dateofbirth'])
+                user_json['reported_positive_date'] = try_fromisoformat(user_json['reported_positive_date'])
+                user_json['confirmed_positive_date'] = try_fromisoformat(user_json['confirmed_positive_date'])
+
                 usr = User(**user_json)
                 usr.invariant = user_json
                 lst.append(usr)

@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-
+from werkzeug.security import generate_password_hash
 db = SQLAlchemy()
 
 
@@ -31,6 +31,7 @@ class User(db.Model):
 
     def __init__(self, *args, **kw):
         super(User, self).__init__(*args, **kw)
+        self.password = generate_password_hash(self.password)
         self._authenticated = False
 
     def set_password(self, password):
