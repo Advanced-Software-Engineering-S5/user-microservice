@@ -155,7 +155,7 @@ class User:
             User.filter("and_(User.id > 3, User.id < 6)")
             User.filter("and_(User.dateofbirth > '2020-11-18T20:54:25.509863', User.dateofbirth < '2020-11-18T20:54:25.509881')")
         """
-        req = requests.put(f"{BASE_URL}/users/filter", json=str)
+        req = requests.get(f"{BASE_URL}/users/filter", params=dict(filter=str))
         if req.status_code == 200:
             lst = list()
             for user_json in req.json():

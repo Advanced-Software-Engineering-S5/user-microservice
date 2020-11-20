@@ -192,16 +192,17 @@ paths:
                 items:
                   $ref: '#/components/schemas/user'
   /users/filter:
-    put:
+    get:
       description: |
         Return all the users with respect to the issued filter stmt.
       operationId: user_microservice.views.user.get_users_filtered
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: string
-              example: User.id == 3 and User.is_admin
+      parameters:
+        - name: filter
+          in: query
+          required: true
+          schema:
+            type: string
+            example: User.id == 3 and User.is_admin
       responses:
         "200":
           description: List of users satisfying the supplied filters

@@ -84,25 +84,25 @@ class TestEndpoints(unittest.TestCase):
     def test_filter(self):
         with self.app.test_client() as client:
             #Same tests from test_user
-            user_list = client.put("/users/filter", json="and_(User.id > 2, User.id < 5)").get_json()
+            user_list = client.get("/users/filter", query_string="filter=and_(User.id > 2, User.id < 5)").get_json()
             self.assertEqual(len(user_list), 2)
 
             for user in user_list:
                 self.assertEqual(type(datetime.fromisoformat(user['dateofbirth'])), datetime)
 
-            user_birthday = client.put("/users/filter",
-                                       json="User.dateofbirth == '{}'".format(
+            user_birthday = client.get("/users/filter",
+                                       query_string="filter=User.dateofbirth == '{}'".format(
                                            self.user_list[0]['dateofbirth'].isoformat())).get_json()
             self.assertEqual(user_birthday[0]['email'], self.user_list[0]['email'])
 
-            user_list = client.put("/users/filter",
-                                   json="and_(User.dateofbirth > '{date1}', User.dateofbirth < '{date2}')".format(
+            user_list = client.get("/users/filter",
+                                   query_string="filter=and_(User.dateofbirth > '{date1}', User.dateofbirth < '{date2}')".format(
                                        date1=self.user_list[0]['dateofbirth'].isoformat(),
                                        date2=self.user_list[3]['dateofbirth'].isoformat())).get_json()
             self.assertEqual(len(user_list), 2)
 
             #Check to fail if sending bad filter expr
-            self.assertEqual(client.put("/users/filter", json="print('hello')").status_code, 500)
+            self.assertEqual(client.get("/users/filter", query_string="filter=print('hello')").status_code, 500)
 
     def test_get(self):
         with self.app.test_client() as client:

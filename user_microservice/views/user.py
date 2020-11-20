@@ -99,7 +99,7 @@ def get_users():
 
 
 def get_users_filtered():
-    eval_str = request.get_json()
+    eval_str = request.args['filter']
     try:
         stmt = sanitize_filter(eval_str)
         if stmt:
