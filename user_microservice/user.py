@@ -3,8 +3,6 @@ from dataclasses import dataclass, field, fields
 from datetime import datetime
 from typing import Optional
 
-BASE_URL = "http://0.0.0.0:5000"
-
 
 def try_fromisoformat(iso):
     if type(iso) == str:
@@ -22,6 +20,8 @@ class User:
     Do not return such instances and do not pass them around as function arguments. Each procedure should do its own
     User.get call.
     """
+
+    BASE_URL = "http://0.0.0.0:5000"
 
     id: int
     email: str
@@ -51,14 +51,13 @@ class User:
             usr = User.get(id=1)
             usr = User.get(email='op@op.com')
         """
-        req = requests.get(f"{BASE_URL}/user",
+        req = requests.get(f"{User.BASE_URL}/user",
                            params={
                                'id': id,
                                'email': email,
                                'fiscal_code': fiscal_code,
                                'phone': phone
                            })
-
 
         if req.status_code == 200:
             json_dict = req.json()
@@ -85,7 +84,7 @@ class User:
         for field in fields(self):
             attr = getattr(self, field.name)
             if field.init and attr != self.invariant[field.name]:
-                req = requests.post(f"{BASE_URL}/user/{self.id}/{field.name}",
+                req = requests.post(f"{User.BASE_URL}/user/{self.id}/{field.name}",
                                     json=attr.isoformat() if type(attr) == datetime else attr)
                 if req.status_code == 200:
                     self.invariant[field.name] = attr
@@ -117,7 +116,7 @@ class User:
             'restaurant_id': restaurant_id
         }
 
-        req = requests.post(f"{BASE_URL}/user", json=user_dict)
+        req = requests.post(f"{User.BASE_URL}/user", json=user_dict)
         if req.status_code == 201:
             return req.json()
         else:
@@ -128,7 +127,7 @@ class User:
         """
         Returns a list of all the users
         """
-        req = requests.get(f"{BASE_URL}/users")
+        req = requests.get(f"{User.BASE_URL}/users")
         if req.status_code == 200:
             lst = list()
             for user_json in req.json():
@@ -155,7 +154,7 @@ class User:
             User.filter("and_(User.id > 3, User.id < 6)")
             User.filter("and_(User.dateofbirth > '2020-11-18T20:54:25.509863', User.dateofbirth < '2020-11-18T20:54:25.509881')")
         """
-        req = requests.get(f"{BASE_URL}/users/filter", params=dict(filter=str))
+        req = requests.get(f"{User.BASE_URL}/users/filter", params=dict(filter=str))
         if req.status_code == 200:
             lst = list()
             for user_json in req.json():
