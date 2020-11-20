@@ -14,6 +14,10 @@ def create_app(dbfile="userdb.db"):
     flask_app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{dbfile}"
     flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     flask_app.config["JWT_SECRET_KEY"] = "secret_key_bella_e_nascosta"
+    flask_app.config['JWT_TOKEN_LOCATION'] = ['cookies']
+    flask_app.config['JWT_ACCESS_COOKIE_NAME'] = 'gooutsafe_jwt_token'
+    flask_app.config['JWT_COOKIE_CSRF_PROTECT'] = True
+    flask_app.config['JWT_CSRF_IN_COOKIES'] = True
 
     # Bind JWT manager
     jwt.init_app(flask_app)

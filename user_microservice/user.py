@@ -1,4 +1,4 @@
-import requests, json
+import requests, json, os
 from dataclasses import dataclass, field, fields
 from datetime import datetime
 from typing import Optional
@@ -21,7 +21,7 @@ class User:
     User.get call.
     """
 
-    BASE_URL = "http://0.0.0.0:5000"
+    BASE_URL = f"http://{os.environ.get('GOS_USER')}"
 
     id: int
     email: str
@@ -100,6 +100,7 @@ class User:
                fiscal_code=None,
                phone=None,
                dateofbirth=None,
+               is_admin=None,
                restaurant_id=None):
         """
         Creates an user.
@@ -112,6 +113,7 @@ class User:
             'password': password,
             'fiscal_code': fiscal_code,
             'phone': phone,
+            'is_admin': is_admin,
             'dateofbirth': dateofbirth.isoformat() if type(dateofbirth) == datetime else dateofbirth,
             'restaurant_id': restaurant_id
         }

@@ -10,7 +10,7 @@ def auth():
         usr = User.query.filter(User.email == data['email']).first()
         if usr and check_password_hash(usr.password, data['password']):
             token = create_access_token(identity=usr.id)
-            return str(token), 200
+            return token, 200
         else:
             return "Authorization failed", 401
     except DBAPIError as exc:

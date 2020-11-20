@@ -111,10 +111,20 @@ class TestUserMicroservice(LiveServerTestCase):
         self.assertEqual(user.dateofbirth, datetime(year=1996, month=1, day=2))
 
     def test_submit(self):
+        now = datetime.now()
+
         user = User.get(id=1)
         user.firstname = "mario"
+        user.is_admin = True
+        user.is_positive = True
+        user.confirmed_positive_date = now
+        user.reported_positive_date = now
         user.dateofbirth = datetime(year=1997, month=4, day=3)
         user.submit()
 
         self.assertEqual(User.get(id=1).firstname, "mario")
         self.assertEqual(User.get(id=1).dateofbirth, datetime(year=1997, month=4, day=3))
+        self.assertEqual(User.get(id=1).is_admin, True)
+        self.assertEqual(User.get(id=1).is_positive, True)
+        self.assertEqual(User.get(id=1).confirmed_positive_date, now)
+        self.assertEqual(User.get(id=1).reported_positive_date, now)

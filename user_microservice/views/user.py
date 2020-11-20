@@ -56,6 +56,7 @@ def create_user(*,
                 fiscal_code=None,
                 phone=None,
                 dateofbirth=None,
+                is_admin=None,
                 restaurant_id=None):
     try:
         db.session.add(
@@ -65,6 +66,7 @@ def create_user(*,
                  password=password,
                  fiscal_code=fiscal_code,
                  phone=phone,
+                 is_admin=is_admin,
                  dateofbirth=try_fromisoformat(dateofbirth),
                  restaurant_id=restaurant_id))
         db.session.commit()
