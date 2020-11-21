@@ -191,6 +191,31 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/user'
+  /users/{user_id}:
+    delete:
+      description: Delete user specified by `user_id`
+      operationId: user_microservice.views.user.delete_user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User succesfully deleted
+          content:
+            {}
+        "404":
+          description: User does not exist
+          content:
+            {}
+        "500":
+          description: Error processing request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error_response'
   /users/filter:
     get:
       description: |

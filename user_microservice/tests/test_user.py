@@ -128,3 +128,11 @@ class TestUserMicroservice(LiveServerTestCase):
         self.assertEqual(User.get(id=1).is_positive, True)
         self.assertEqual(User.get(id=1).confirmed_positive_date, now)
         self.assertEqual(User.get(id=1).reported_positive_date, now)
+    
+    def test_delete_user(self):
+        # delete one of the users
+        tested_app = self.app.test_client()
+        resp = tested_app.delete(f'/users/1')
+        self.assertEqual(resp.status_code, 200)
+        user = User.query.get(id=1)
+        self.assertIsNone(user)

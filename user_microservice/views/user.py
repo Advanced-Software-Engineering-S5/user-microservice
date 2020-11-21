@@ -148,3 +148,13 @@ def get_field(user_id, field):
             return f"No field '{field}'", 500
     except DBAPIError as exc:
         return str(exc), 500
+
+def delete_user(user_id):
+    try:
+        usr = User.query.get(user_id)
+        if usr is None:
+            return {'message': f'user with id {user_id} not found'}, 404
+        db.session.delete(usr)
+        db.session.commit()
+    except DBAPIError as exc:
+        return str(exc), 500
