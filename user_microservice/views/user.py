@@ -124,7 +124,9 @@ def update_field(user_id, field):
     try:
         usr = User.query.filter(User.id == user_id).first()
         if hasattr(usr, field):
-            if field in ['confirmed_positive_date', 'reported_positive_date', 'dateofbirth']:
+            if field == "password":
+                setattr(usr, field, generate_password_hash(request.get_json()))
+            elif field in ['confirmed_positive_date', 'reported_positive_date', 'dateofbirth']:
                 setattr(usr, field, datetime.fromisoformat(request.get_json()))
             else:
                 setattr(usr, field, request.get_json())
