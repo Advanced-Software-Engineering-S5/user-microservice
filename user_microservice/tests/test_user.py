@@ -24,7 +24,7 @@ class TestUserMicroservice(LiveServerTestCase):
         self.app.config['TESTING'] = True
         # Default port is 5000
         self.app.config['LIVESERVER_IP'] = "0.0.0.0"
-        self.app.config['LIVESERVER_PORT'] = 5000
+        self.app.config['LIVESERVER_PORT'] = 4200
         # Default timeout is 5 seconds
         self.app.config['LIVESERVER_TIMEOUT'] = 10
         return self.app
