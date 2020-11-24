@@ -1,6 +1,7 @@
 import connexion
 from flask_jwt_extended import JWTManager, create_access_token
 from user_microservice.database import db
+import os
 
 jwt = JWTManager()
 
@@ -18,6 +19,10 @@ def create_app(dbfile="userdb.db"):
     flask_app.config['JWT_ACCESS_COOKIE_NAME'] = 'gooutsafe_jwt_token'
     flask_app.config['JWT_COOKIE_CSRF_PROTECT'] = True
     flask_app.config['JWT_CSRF_IN_COOKIES'] = True
+    
+    # celery config
+    flask_app.config['CELERY_BROKER_URL'] = f"redis://{os.environ.get('GOS_REDIS')}"
+    flask_app.config['CELERY_RESULT_BACKEND'] = f"redis://{os.environ.get('GOS_REDIS')}"
 
     # Bind JWT manager
     jwt.init_app(flask_app)

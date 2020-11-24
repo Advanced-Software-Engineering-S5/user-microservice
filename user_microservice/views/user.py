@@ -128,6 +128,8 @@ def update_field(user_id, field):
                 setattr(usr, field, generate_password_hash(request.get_json()))
             elif field in ['confirmed_positive_date', 'reported_positive_date', 'dateofbirth']:
                 setattr(usr, field, datetime.fromisoformat(request.get_json()))
+            elif field in ['is_positive', 'is_active', 'is_admin']:
+                setattr(usr, field, bool(request.get_json()))
             else:
                 setattr(usr, field, request.get_json())
             db.session.commit()
@@ -158,5 +160,6 @@ def delete_user(user_id):
             return {'message': f'user with id {user_id} not found'}, 404
         db.session.delete(usr)
         db.session.commit()
+        return {}, 200
     except DBAPIError as exc:
         return str(exc), 500

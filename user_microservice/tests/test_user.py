@@ -6,7 +6,7 @@ from user_microservice.database import db
 from datetime import datetime
 from requests.exceptions import ConnectionError
 from flask_testing import LiveServerTestCase
-
+import user_microservice.database
 
 class TestUserMicroservice(LiveServerTestCase):
     # @classmethod
@@ -129,10 +129,42 @@ class TestUserMicroservice(LiveServerTestCase):
         self.assertEqual(User.get(id=1).confirmed_positive_date, now)
         self.assertEqual(User.get(id=1).reported_positive_date, now)
     
+
+class TestUser(unittest.TestCase):
+    def setUp(self) -> None:
+        self.app = create_app(":memory:")
+        user = {
+            'email': "user1@test.com",
+            'firstname': "user1",
+            'lastname': "user1",
+            'fiscal_code': "Fake1",
+            'password': "user1",
+            'dateofbirth': datetime(year=1996, month=1, day=2)
+        }
+        with self.app.app_context():
+            user = user_microservice.database.User(**user)
+            db.session.add(user)
+            db.session.commit()
+            db.session.refresh(user)
+            self.uid = user.id
+        
+    def tearDown(self) -> None:
+        db.drop_all(app=self.app)
+
     def test_delete_user(self):
         # delete one of the users
         tested_app = self.app.test_client()
         resp = tested_app.delete(f'/users/1')
         self.assertEqual(resp.status_code, 200)
-        user = User.query.get(id=1)
-        self.assertIsNone(user)
+        with self.app.app_context():
+            user = user_microservice.database.User.query.get(self.uid)
+            self.assertIsNone(user)
+
+    def test_user_set_field(self):
+        # delete one of the users
+        tested_app = self.app.test_client()
+        resp = tested_app.post(f'/user/{self.uid}/is_positive', json='True')
+        self.assertEqual(resp.status_code, 200)
+        with self.app.app_context():
+            user = user_microservice.database.User.query.get(self.uid)
+            self.assertEqual(user.is_positive, True)
