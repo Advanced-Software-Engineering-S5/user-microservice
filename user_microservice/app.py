@@ -35,7 +35,7 @@ def create_app(dbfile="userdb.db"):
     return flask_app
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": #pragma: no cover
     import sys
     app = create_app(sys.argv[1])
     app.run()

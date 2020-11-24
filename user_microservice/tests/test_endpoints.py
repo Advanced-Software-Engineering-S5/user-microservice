@@ -3,6 +3,7 @@ from multiprocessing import Process
 from user_microservice.app import create_app
 from user_microservice.database import db, User
 from user_microservice.filter_sanitizer import sanitize_filter
+from user_microservice.views.user import try_fromisoformat, try_isoformat
 from datetime import datetime
 
 
@@ -138,7 +139,32 @@ class TestEndpoints(unittest.TestCase):
                 client.post("/user/auth", json=dict(email=self.user_list[0]['email'], password="password")).status_code,
                 401)
 
+    def test_delete_user(self):
+        with self.app.test_client() as client:
+            # delete one of the users
+            resp = client.delete('/users/1')
+            self.assertEqual(resp.status_code, 200)
+
+            user = client.get('/user?id=1').get_json()
+            self.assertEqual(user, dict())
+
+            resp = client.delete('/users/1')
+            self.assertEqual(resp.status_code, 404)
+
+    def test_user_set_field(self):
+        with self.app.test_client() as client:
+            resp = client.post('user/1/is_positive', json=True)
+            self.assertEqual(resp.status_code, 200)
+            user = client.get('/user?id=1').get_json()
+            self.assertEqual(user['is_positive'], True)
+
     def test_sanitizer(self):
         self.assertTrue(sanitize_filter("User.id == 3"))
         self.assertTrue(sanitize_filter("User.firstname == 'mario'"))
         self.assertFalse(sanitize_filter("User.firstname == "))
+
+    def test_datetime_conversion(self):
+        self.assertIsNotNone(try_fromisoformat(datetime.now().isoformat()))
+        self.assertIsNone(try_fromisoformat("blergh"))
+        self.assertIsNotNone(try_isoformat(datetime.now()))
+        self.assertIsNone(try_isoformat("blergh"))

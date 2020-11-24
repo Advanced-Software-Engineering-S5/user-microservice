@@ -18,10 +18,7 @@ def try_fromisoformat(iso):
 
 def try_isoformat(iso):
     if type(iso) == datetime:
-        try:
-            return iso.isoformat()
-        except ValueError:
-            pass
+        return iso.isoformat()
     return None
 
 
