@@ -19,6 +19,7 @@ def create_app(dbfile="userdb.db"):
     flask_app.config['JWT_ACCESS_COOKIE_NAME'] = 'gooutsafe_jwt_token'
     flask_app.config['JWT_COOKIE_CSRF_PROTECT'] = True
     flask_app.config['JWT_CSRF_IN_COOKIES'] = True
+    flask_app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
     
     # celery config
     flask_app.config['CELERY_BROKER_URL'] = f"redis://{os.environ.get('GOS_REDIS')}/{os.environ.get('CELERY_DB_NUM')}"
@@ -35,7 +36,7 @@ def create_app(dbfile="userdb.db"):
     return flask_app
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": #pragma: no cover
     import sys
     app = create_app(sys.argv[1])
     app.run()
