@@ -21,8 +21,8 @@ def create_app(dbfile="userdb.db"):
     flask_app.config['JWT_CSRF_IN_COOKIES'] = True
     
     # celery config
-    flask_app.config['CELERY_BROKER_URL'] = f"redis://{os.environ.get('GOS_REDIS')}"
-    flask_app.config['CELERY_RESULT_BACKEND'] = f"redis://{os.environ.get('GOS_REDIS')}"
+    flask_app.config['CELERY_BROKER_URL'] = f"redis://{os.environ.get('GOS_REDIS')}/{os.environ.get('CELERY_DB_NUM')}"
+    flask_app.config['CELERY_RESULT_BACKEND'] = f"redis://{os.environ.get('GOS_REDIS')}/{os.environ.get('CELERY_DB_NUM')}"
 
     # Bind JWT manager
     jwt.init_app(flask_app)
