@@ -36,16 +36,19 @@ def create_app(dbfile="userdb.db"):
     db.create_all(app=flask_app)
 
     with flask_app.app_context():
-        if User.query.filter(User.email == "health@authority.com").first() is None:
-            db.session.add(
-                User(email="health@authority.com",
-                    firstname="admin",
-                    lastname="admin",
-                    password='admin',
-                    fiscal_code='codice',
-                    phone='1111111111',
-                    is_admin=True))
-            db.session.commit()
+        try:
+            if User.query.filter(User.email == "health@authority.com").first() is None:
+                db.session.add(
+                    User(email="health@authority.com",
+                        firstname="admin",
+                        lastname="admin",
+                        password='admin',
+                        fiscal_code='codice',
+                        phone='1111111111',
+                        is_admin=True))
+                db.session.commit()
+        except Exception:
+            pass
 
     return flask_app
 
